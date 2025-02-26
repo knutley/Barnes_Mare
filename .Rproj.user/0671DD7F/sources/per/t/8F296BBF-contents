@@ -1,0 +1,190 @@
+##########################
+# Structural Break Test #
+####### 17-01-2025 ######
+########################
+
+# 1. Box-Jenkins Test # 
+
+# The Box-Jenkins methodology (also known as ARMA modeling) isn't actually a 
+# single test, but rather a systematic approach to identify, estimate, and 
+# diagnose time series models. The process involves analyzing a time series 
+# dataset to find the best fit of an ARMA (AutoRegressive Moving Average) model.
+
+# Identification --> Estimation --> Diagnosis --> Metadiagnosis --> Analysis 
+
+## 1.1 Load Required Libraries ## 
+
+library(forecast)
+library(ggfortify)
+library(ggplot2)
+library(readr)
+library(strucchange)
+library(tidyverse)
+library(tseries)
+library(zoo)
+
+
+## 1.2 Read in Data ##
+
+mare_data <- read.csv("~/Downloads/mare_split.csv") # Nick has actually asked 
+# me to process the data again - see email about adding a Boolean loop to the 
+# Manguinhos data - but, at the moment, we're going to use what we have to see 
+# if we can manage to do a structural break test. 
+
+## 1.3 Wrangle Data into a Matrix ## 
+
+# Right, so looking at Nick's Resident Denunciation paper, the first structural
+# break test leverages a CONQUEST variable, that is where the TCP took over ADA 
+# territories in Sept 2009. And he suggests that this conquest impacted crime 
+# denunciations over time. So, the matrix should include time and observations.
+
+# Denunciation aggregation: 
+
+typeof(mare_data$date) # Right, so, this needs to be coralled into a date format.
+mare_data$date <- as.Date(mare_data$date) # Repeated the command above, responded
+# that it was a "double", so I believe it's recognised it as a date. 
+
+denunciations <- mare_data %>% 
+  mutate(start = as.Date(date),
+         end = as.Date(date)) %>%
+  rowwise() %>%
+  mutate(date = list(seq(start, end, by = "month"))) %>% 
+  unnest(date) %>% 
+  group_by(date) %>% 
+  summarise(
+    n_denunciations = n()
+  ) %>%
+  complete(date = seq(min(date), max(date), by = "month"),
+           fill = list(n_denunciations = 0))
+View(denunciations) # This worked. 
+
+# Turn into time-series matrix: 
+
+break_matrix1 <- data.frame(
+  date = denunciations$date,
+  observations = denunciations$n_denunciations
+) %>%
+  arrange(date) %>%
+  mutate(
+    year = format(date, "%Y"),
+    month = format(date, "%m"),
+    yearmonth = format(date, "%Y-%m")
+  )
+
+## 1.4 Convert to a Time Series Object ## 
+
+ts_denunciations1 <- ts(break_matrix$observations, 
+                       frequency = 12,  # Monthly data
+                       start = c(as.numeric(format(min(break_matrix$date), "%Y")),
+                                 as.numeric(format(min(break_matrix$date), "%m"))))
+view(ts_denunciations1) # I think this has weirdly worked? Unclear -- maybe kick this
+# to Elisa to look over. 
+
+## 1.5 Exploratory Analysis ## 
+
+# Plot original time series: 
+
+plot(ts_denunciations, 
+     main = "Monthly Denunciations Over Time",
+     ylab = "Number of Denunciations",
+     xlab = "Time") # Right, so based on https://github.com/julzerinos/r-structural-breaks-with-ml
+# this looks right? 
+
+# Decompose time seriesL 
+
+# I think this allows you to check whether the time series data is trended, seasonal, 
+# or stochastic? Weirdly it looks very seasonal? Is that right? *** kick to Elisa 
+# D'Amico for her thoughts? 
+
+ts_decomposition <- decompose(ts_denunciations)
+plot(ts_decomposition)
+
+## 1.6 Stationarity Tests ## 
+
+# Dickey-Fuller test:
+
+adf_test <- adf.test(ts_denunciations)
+# I got a warning message saying, 'the p-value smaller than the printed p-value.'
+# Need to refer to Pevehouse book to figure out what that means. 
+print(adf_test) # Okay, went and looked and it seems that smaller p-value means that 
+# it rejects the null hypothesis (the data is likely to be stationary). And then 
+# interpreting the test statistic, as it's negative, that's stronger evidence against
+# the null hypothesis meaning that it is stationary. 
+
+# KPSS Test: 
+
+kpss_test <- kpss.test(ts_denunciations)
+# Same warning here about p-values. 
+print(kpss_test) # Null hyptohesis rejected, stationary data. 
+
+# Just to note here, is the data was non-stationary, you'd apparently have to 
+# "different the series". 
+
+## 1.8 Model Fitting ## 
+
+# Auto ARIMA (this is integrative btw!!) to determine best model:
+
+arima_model <- auto.arima(ts_denunciations,
+                          seasonal = TRUE,
+                          stepwise = TRUE,
+                          approximation = FALSE)
+print(summary(arima_model)) 
+# Okay, so this classifies the time series as an ARIMA (2,0,0) with a non-zero mean. 
+# Looking at https://people.duke.edu/~rnau/411arim.htm, that means that this model 
+# is a second-order auto-regressive model. Essentially, this is a statistical model 
+# where the current value of a time series is predicted based on a linear combination
+# of the two previous values in the series, plus a random error term. They also say
+# (and idk if this is helpful), "there would be a Yt-2 term on the right as well, 
+# and so on.  Depending on the signs and magnitudes of the coefficients, an
+# ARIMA(2,0,0) model could describe a system whose mean reversion takes place 
+# in a sinusoidally oscillating fashion, like the motion of a mass on a spring 
+# that is subjected to random shocks." 
+
+## 1.9 Diagnostic Checks ## 
+
+# Check residuals: 
+
+checkresiduals(arima_model)
+
+lb_test <- Box.test(residuals(arima_model), 
+                    lag = min(10, length(residuals(arima_model)) - 1),
+                    type = "Ljung-Box")
+print(lb_test)# Gives you a Ljung-Box test here. That is a statistical
+# test used within the Box Jenkins methodology to check if the residuals (errors)
+# from a fitted model exhibit any significant autocorrelation, essentially 
+# verifying the model's fit. 
+
+# Okay, so looking at the high p-value (0.9693), there appears to be no significant
+# evidence of autocorrelation in the residuals. This means the ARIMA (2,0,0) model
+# has adequately captured the time series' structure, and the residuals look like 
+# white noise (random). Total lags refers to the number of lag periods checked 
+# for autocorrelation. 
+
+# It's apparently possible to forecast for the next twelve or so months, but Nick 
+# didn't ask for that, so I'm just going to leave that off. 
+
+# # 1.10 Create Summary Output ## 
+
+summary_stats <- data.frame(
+  Metric = c("ADF p-value", "KPSS p-value", "Ljung-Box p-value", 
+             "AIC", "BIC", "Mean Absolute Error"),
+  Value = c(adf_test$p.value,
+            kpss_test$p.value,
+            lb_test$p.value,
+            AIC(arima_model),
+            BIC(arima_model),
+            mean(abs(residuals(arima_model))))
+)
+print(summary_stats)
+
+# Right, going to render this into a html file and send it to Nick. Meanwhile, 
+# I will continue to work on the structural break test. 
+
+# Having spoken to Nick, he actually wants the den_contra to be the variable, so 
+# I am going to redo this with the right variable. Add the den_contra to the Manguinhos 
+# data, etc. etc. 
+
+
+
+
+
