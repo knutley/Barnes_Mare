@@ -4,7 +4,7 @@ We will additionally include replication data and a code book in time.
 
 Codebook 
 - Codigo.Unico: the unique code for each observation (or recorded denunciation)
-- den_cd: 
+- den_cd: the call 
 - den_numero:
 - den_dt_rec:
 - den_dt_alt:
