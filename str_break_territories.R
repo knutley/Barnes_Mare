@@ -11,13 +11,14 @@ mare_clean <- read.csv("~/Downloads/mare_clean.csv") # This is the data where
 # the Manguinhos data has been added, the assunto_tipo has been standardised 
 # and the den_contra variable corrected. 
 
-# Now need to cut the 'tail' off the data, from February 2013. 
+# Now need to cut the 'tail' off the data, from February 2013. There is a spike
+# in the data, which we believe is due to the football. 
 
 library(dplyr)
 library(lubridate)
 mare_clean1 <- mare_clean %>%
   filter(date <= "2013-03")
-View(mare_clean1) # Right, here I've cut off anything after February 2013. 
+View(mare_clean1) # Here, I've cut off anything after February 2013. 
 
 # I've already performed the Box Jenkins Methodology on the aggregate level 
 # (and you have the results of that in str_break_mare2.html). So, I'm going 
@@ -37,7 +38,7 @@ library(zoo)
 
 ## 2.1 Defining CVNH Territories ## 
 
-CVNH_neighbourhoods <- c("NOVA HOLANDA", "PARQUE MARE", "PARQUE RUBENS VAZ")
+CVNH_neighbourhoods <- c("NOVA HOLANDA", "PARQUE MARE", "PARQUE RUBENS VAZ") 
 CVNH_grouped_data <-  mare_clean1%>%
   filter(den_comunidade %in% CVNH_neighbourhoods)
 View(CVNH_grouped_data)
@@ -46,7 +47,7 @@ View(CVNH_grouped_data)
 
 typeof(CVNH_grouped_data$date) # This needs to be corraled into a date format. 
 CVNH_grouped_data$date <- as.Date(CVNH_grouped_data$date) # Repeated the command above, responded
-# that it was a "double", so I believe it's recognised it as a date.
+# that it was a "double", so it's recognised it as a date.
 
 # Using the den_contra variable as the 'n' denunciations: 
 
@@ -129,7 +130,7 @@ if (!is.na(CVNH_bp[1])) {
   message("No structural breaks detected in the data")
 }
 
-# Plot the time series with breakpoints for better visualization
+# Plot the time series with breakpoints for better visualisation
 plot(CVNHX, type = "l", col = "black", lwd = 2, 
      main = "CVNH Time Series with Structural Breaks",
      xlab = "Time", ylab = "Observations")
@@ -148,7 +149,7 @@ segments <- list(
   (CVNH_breakpoints[5] + 1):length(CVNHX)
 )
 
-# Calculate mean for each segment
+# Calculate the mean for each segment
 segment_means <- sapply(segments, function(seg) mean(CVNHX[seg]))
 
 # Add horizontal lines for the mean of each segment
@@ -278,7 +279,7 @@ segments1 <- list(
   (CVPU_breakpoints[3] + 1):length(CVPUX)
 )
 
-# Calculate mean for each segment
+# Calculate the mean for each segment
 segment_means1 <- sapply(segments1, function(seg) mean(CVPUX[seg]))
 
 # Add horizontal lines for the mean of each segment
@@ -411,7 +412,7 @@ segments2 <- list(
   (ADA_breakpoints[5] + 1):length(ADAX)
 )
 
-# Calculate mean for each segment
+# Calculate the mean for each segment
 segment_means2 <- sapply(segments2, function(seg) mean(ADAX[seg]))
 
 # Add horizontal lines for the mean of each segment
@@ -434,11 +435,13 @@ legend("topright",
        lwd = c(2, 2, 1.5),
        cex = 0.8)
 
-# NB: The structural breaks at 85 and 91 were not the first order breaks; 
-# the first order break was at 27, then consequently shifted to 24 and 29 
-# respectively as the number of breaks was increased. So, my point is that
+# NB: The structural breaks at 85 and 91 were not the first-order breaks; 
+# the first order break was at 27, then consequently shifted to 24 and 29, 
+# respectively, as the number of breaks was increased. So, my point is that
 # even though the TCP consolidated this territory around this time, these
-# were not the strongest shifts we see in the data writ large. 
+# were not the strongest shifts we see in the data writ large. Further, the 
+# the regression that Nick is relying on seems to suggest that this is not 
+# statistically significant (p-value > 0.05). 
 
 ## 2.4 Defining TCP Territories ## 
 
@@ -548,7 +551,7 @@ segments3 <- list(
   (TCP_breakpoints[3] + 1):length(TCPX)
 )
 
-# Calculate mean for each segment
+# Calculate the mean for each segment
 segment_means3 <- sapply(segments3, function(seg) mean(TCPX[seg]))
 
 # Add horizontal lines for the mean of each segment
@@ -572,15 +575,15 @@ legend("topright",
        cex = 0.8)
 
 # NB: I attempted to render a structural break function with 1, 2, 3, 4, and 
-# 5 breakpoints, but it will only recognise 3 breakpoints. Meaning that the shifts
-# in your data here are sort of significantly frontloaded. According to the 
-# regression you sent me, this was the only relationship of statistical significance. 
-# The data, however, would suggest that this was due, in large part, to the selection
-# bias implicit to partitioning the data at Sept 2009. 
+# 5 breakpoints, but it will only recognise 3 breakpoints. This means that the shifts
+# in this data are frontloaded. According to the regression you Nick me, this was the 
+# only relationship of statistical significance. The data, however, would suggest that 
+# this was due, in large part, to the selection bias implicit to partitioning the data
+# at Sept 2009. 
 
 # I went back and added mean horizontal ablines for improved understanding, and 
-# then I thought I would basically cut the ADA specific dataset bc I think that's 
-# where he'd be most likely to focus.
+# then I thought I would cut the ADA-specific dataset bc I think that's 
+# where Nick would be most likely to focus.
 
 # Subset the data to include only observations after 2006-12
 subset_index <- which(ADA_break_matrix$date > as.Date("2006-12-01"))
