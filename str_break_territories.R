@@ -138,6 +138,39 @@ plot(CVNHX, type = "l", col = "black", lwd = 2,
 CVNH_breakpoints <- c(22, 26, 44, 56, 125)
 abline(v = CVNH_breakpoints, col = "red", lty = 2, lwd = 2)
 
+# Create segments for calculating means
+segments <- list(
+  1:CVNH_breakpoints[1],
+  (CVNH_breakpoints[1] + 1):CVNH_breakpoints[2],
+  (CVNH_breakpoints[2] + 1):CVNH_breakpoints[3],
+  (CVNH_breakpoints[3] + 1):CVNH_breakpoints[4],
+  (CVNH_breakpoints[4] + 1):CVNH_breakpoints[5],
+  (CVNH_breakpoints[5] + 1):length(CVNHX)
+)
+
+# Calculate mean for each segment
+segment_means <- sapply(segments, function(seg) mean(CVNHX[seg]))
+
+# Add horizontal lines for the mean of each segment
+for (i in 1:length(segments)) {
+  segment <- segments[[i]]
+  lines(
+    x = c(min(segment), max(segment)),
+    y = c(segment_means[i], segment_means[i]),
+    col = "blue",
+    lwd = 1.5,
+    lty = 1
+  )
+}
+
+# Add a legend
+legend("topright", 
+       legend = c("CVNH Time Series", "Structural Breaks", "Segment Means"),
+       col = c("black", "red", "blue"),
+       lty = c(1, 2, 1),
+       lwd = c(2, 2, 1.5),
+       cex = 0.8)
+
 # 2.2 Defining CVPU Territories #
 
 CVPU_neighbourhood <- "PARQUE UNIAO"
@@ -236,6 +269,37 @@ plot(CVPUX, type = "l", col = "black", lwd = 2,
 # Add the fitted breakpoints as lines
 CVPU_breakpoints <- c(25, 28, 125)
 abline(v = CVPU_breakpoints, col = "red", lty = 2, lwd = 2)
+
+# Create segments for calculating means
+segments1 <- list(
+  1:CVPU_breakpoints[1],
+  (CVPU_breakpoints[1] + 1):CVPU_breakpoints[2],
+  (CVPU_breakpoints[2] + 1):CVPU_breakpoints[3],
+  (CVPU_breakpoints[3] + 1):length(CVPUX)
+)
+
+# Calculate mean for each segment
+segment_means1 <- sapply(segments1, function(seg) mean(CVPUX[seg]))
+
+# Add horizontal lines for the mean of each segment
+for (i in 1:length(segments1)) {
+  segment1 <- segments1[[i]]
+  lines(
+    x = c(min(segment1), max(segment1)),
+    y = c(segment_means1[i], segment_means1[i]),
+    col = "blue",
+    lwd = 1.5,
+    lty = 1
+  )
+}
+
+# Add a legend
+legend("topright", 
+       legend = c("CVPU Time Series", "Structural Breaks", "Segment Means"),
+       col = c("black", "red", "blue"),
+       lty = c(1, 2, 1),
+       lwd = c(2, 2, 1.5),
+       cex = 0.8)
 
 ## 2.3 Defining ADA Territories ## 
 
@@ -336,6 +400,39 @@ plot(ADAX, type = "l", col = "black", lwd = 2,
 # Add the fitted breakpoints as lines
 ADA_breakpoints <- c(24, 29, 54, 85, 91)
 abline(v = ADA_breakpoints, col = "red", lty = 2, lwd = 2)
+
+# Create segments for calculating means
+segments2 <- list(
+  1:ADA_breakpoints[1],
+  (ADA_breakpoints[1] + 1):ADA_breakpoints[2],
+  (ADA_breakpoints[2] + 1):ADA_breakpoints[3],
+  (ADA_breakpoints[3] + 1):ADA_breakpoints[4],
+  (ADA_breakpoints[4] + 1):ADA_breakpoints[5],
+  (ADA_breakpoints[5] + 1):length(ADAX)
+)
+
+# Calculate mean for each segment
+segment_means2 <- sapply(segments2, function(seg) mean(ADAX[seg]))
+
+# Add horizontal lines for the mean of each segment
+for (i in 1:length(segments2)) {
+  segment2 <- segments2[[i]]
+  lines(
+    x = c(min(segment2), max(segment2)),
+    y = c(segment_means2[i], segment_means2[i]),
+    col = "blue",
+    lwd = 1.5,
+    lty = 1
+  )
+}
+
+# Add a legend
+legend("topright", 
+       legend = c("ADA Time Series", "Structural Breaks", "Segment Means"),
+       col = c("black", "red", "blue"),
+       lty = c(1, 2, 1),
+       lwd = c(2, 2, 1.5),
+       cex = 0.8)
 
 # NB: The structural breaks at 85 and 91 were not the first order breaks; 
 # the first order break was at 27, then consequently shifted to 24 and 29 
@@ -441,7 +538,38 @@ plot(TCPX, type = "l", col = "black", lwd = 2,
 
 # Add the fitted breakpoints as lines
 TCP_breakpoints <- c(32, 44, 47)
-abline(v = TCP_breakpoints, col = "red", lty = 2, lwd = 2)
+abline(v = TCP_breakpoints, col = "red", lty = 2, lwd = 2) 
+
+# Create segments for calculating means
+segments3 <- list(
+  1:TCP_breakpoints[1],
+  (TCP_breakpoints[1] + 1):TCP_breakpoints[2],
+  (TCP_breakpoints[2] + 1):TCP_breakpoints[3],
+  (TCP_breakpoints[3] + 1):length(TCPX)
+)
+
+# Calculate mean for each segment
+segment_means3 <- sapply(segments3, function(seg) mean(TCPX[seg]))
+
+# Add horizontal lines for the mean of each segment
+for (i in 1:length(segments3)) {
+  segment3 <- segments3[[i]]
+  lines(
+    x = c(min(segment3), max(segment3)),
+    y = c(segment_means3[i], segment_means3[i]),
+    col = "blue",
+    lwd = 1.5,
+    lty = 1
+  )
+}
+
+# Add a legend
+legend("topright", 
+       legend = c("TCP Time Series", "Structural Breaks", "Segment Means"),
+       col = c("black", "red", "blue"),
+       lty = c(1, 2, 1),
+       lwd = c(2, 2, 1.5),
+       cex = 0.8)
 
 # NB: I attempted to render a structural break function with 1, 2, 3, 4, and 
 # 5 breakpoints, but it will only recognise 3 breakpoints. Meaning that the shifts
@@ -450,3 +578,68 @@ abline(v = TCP_breakpoints, col = "red", lty = 2, lwd = 2)
 # The data, however, would suggest that this was due, in large part, to the selection
 # bias implicit to partitioning the data at Sept 2009. 
 
+# I went back and added mean horizontal ablines for improved understanding, and 
+# then I thought I would basically cut the ADA specific dataset bc I think that's 
+# where he'd be most likely to focus.
+
+# Subset the data to include only observations after 2006-12
+subset_index <- which(ADA_break_matrix$date > as.Date("2006-12-01"))
+ADAX_subset <- ADAX[subset_index]
+dates_subset <- ADA_break_matrix$date[subset_index]
+
+# Find the breakpoints in the subset indices
+subset_breakpoints <- which(ADA_break_matrix$date[subset_index] 
+                            %in% ADA_break_matrix$date[ADA_breakpoints])
+
+# Create the main time-series plot for subsetted data
+plot(dates_subset, ADAX_subset, type = "l", col = "black", lwd = 2, 
+     main = "ADA Time Series (Post-2006-12) with Structural Breaks",
+     xlab = "Time", ylab = "Observations")
+
+# Add vertical lines for breakpoints
+abline(v = ADA_break_matrix$date[ADA_breakpoints], col = "red", lty = 2, lwd = 2)
+
+# Create segments based on subset data breakpoints
+segments5 <- list()
+if (length(subset_breakpoints) > 0) {
+  # First segment: from start to first breakpoint
+  segments5[[1]] <- 1:subset_breakpoints[1]
+  
+  # Middle segments: between consecutive breakpoints
+  if (length(subset_breakpoints) > 1) {
+    for (i in 1:(length(subset_breakpoints)-1)) {
+      segments5[[i+1]] <- (subset_breakpoints[i] + 1):subset_breakpoints[i+1]
+    }
+  }
+  
+  # Last segment: from last breakpoint to end
+  segments5[[length(subset_breakpoints)+1]] <- (subset_breakpoints[length(subset_breakpoints)] + 1):length(ADAX_subset)
+} else {
+  # If no breakpoints in subset, use the whole subset
+  segments5[[1]] <- 1:length(ADAX_subset)
+}
+
+# Calculate mean for each segment
+segment_means5 <- sapply(segments5, function(seg) mean(ADAX_subset[seg]))
+
+# Add horizontal lines for the mean of each segment
+for (i in 1:length(segments5)) {
+  segment5 <- segments5[[i]]
+  
+  # Draw horizontal line from start of segment to end of segment
+  lines(
+    x = c(dates_subset[min(segment5)], dates_subset[max(segment5)]),
+    y = c(segment_means5[i], segment_means5[i]),
+    col = "blue",
+    lwd = 1.5,
+    lty = 1
+  )
+}
+
+# Add a legend
+legend("topright", 
+       legend = c("ADA Time Series", "Structural Breaks", "Segment Means"),
+       col = c("black", "red", "blue"),
+       lty = c(1, 2, 1),
+       lwd = c(2, 2, 1.5),
+       cex = 0.8)
