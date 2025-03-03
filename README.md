@@ -1,4 +1,4 @@
-This is the Git for Nicholas Barnes's Resident Denunciation Project. I have included the visual renderings I did for him (yet to be cleaned up) and the code for the structural break test. We will additionally include replication data in time. 
+This is the Git for Nicholas Barnes's Resident Denunciation Project. I have included the visual renderings I did for him (the annotations for which are yet to be cleaned up) and the code for the structural break test. We will additionally include replication data in time. 
 
 
 Codebook 
