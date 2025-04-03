@@ -21,8 +21,8 @@ mare_clean1 <- mare_clean %>%
 View(mare_clean1) # Here, I've cut off anything after February 2013. 
 
 # I've already performed the Box Jenkins Methodology on the aggregate level 
-# (and you have the results of that in str_break_agg.R). So, I'm going 
-# to go ahead and assume that an ARMA model can be applied to the dataset's 
+# (and you have the results of that in str_break_mare2.html). So, I'm going 
+# to go ahead an assume that an ARMA model can be applied to the dataset's 
 # constituent parts. 
 
 # 2. Territory Structural Breaks # 
