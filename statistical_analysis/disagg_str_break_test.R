@@ -2,6 +2,9 @@
 # Author: Katelyn Nutley 
 # Date: 26-07-2025
 
+# If you have any questions, please refer to agg_str_break_test.R which goes through
+# this bit by bit and interprets the results. 
+
 # Load required libraries
 required_packages <- c("forecast", "ggfortify", "ggplot2", "lubridate", "readr",
                        "strucchange", "tidyverse", "tseries", "zoo", "gridExtra")
