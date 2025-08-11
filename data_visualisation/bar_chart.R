@@ -1,4 +1,4 @@
-# Title: Bar Plot for Denunciations, Police Interventions, and Shootouts 
+# Title: Bar Plot for Denunciations, Police Interventions, and Shootouts - Resident Denunciation Project
 # Author: Katelyn Nutley 
 # Date: 31-07-2025
 
