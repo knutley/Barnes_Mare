@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crime Events Over Time - Improved</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .chart-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .chart-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .chart-subtitle {
+            font-size: 16px;
+            color: #7f8c8d;
+            font-weight: 400;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .control-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        .control-btn.active {
+            background: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chart-header">
+            <h1 class="chart-title">Crime Events Analysis Dashboard</h1>
+            <p class="chart-subtitle">Comprehensive view of denunciations, police operations, and shootouts over time</p>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn active" onclick="showAllData()">All Data</button>
+            <button class="control-btn" onclick="showSmoothed()">Smoothed Trend</button>
+            <button class="control-btn" onclick="showYearly()">Yearly View</button>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="crimeChart"></canvas>
+        </div>
+
+
+    </div>
+
+    <script>
+        // Generate sample data based on the original chart patterns
+        function generateSampleData() {
+            const dates = [];
+            const denunciations = [];
+            const policeOps = [];
+            const shootouts = [];
+
+            // Create monthly data from 2003 to 2014
+            for (let year = 2003; year <= 2014; year++) {
+                for (let month = 0; month < 12; month++) {
+                    const date = new Date(year, month, 1);
+                    dates.push(date.toISOString().slice(0, 7));
+                    
+                    // Generate realistic patterns based on the original chart
+                    let baseDenunciations = 120 + Math.sin((year - 2003) * 0.5) * 30;
+                    let volatility = 50 + Math.random() * 100;
+                    
+                    // Add some major spikes at specific periods
+                    if ((year === 2004 && month < 6) || 
+                        (year === 2009 && month > 6) || 
+                        (year === 2012 && month < 8) ||
+                        (year === 2014 && month > 8)) {
+                        volatility += Math.random() * 200;
+                    }
+                    
+                    denunciations.push(Math.max(20, baseDenunciations + volatility));
+                    
+                    // Police operations typically scale with denunciations but with delay
+                    const opsBase = Math.min(50, Math.max(1, denunciations[denunciations.length - 1] * 0.08 + Math.random() * 10));
+                    policeOps.push(opsBase);
+                    
+                    // Shootouts are rarer events
+                    const shootoutProb = Math.random();
+                    shootouts.push(shootoutProb > 0.7 ? Math.random() * 15 + 2 : Math.random() * 3);
+                }
+            }
+
+            return { dates, denunciations, policeOps, shootouts };
+        }
+
+        const data = generateSampleData();
+        let chart;
+
+        function createChart(chartData, options = {}) {
+            const ctx = document.getElementById('crimeChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: false
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 14,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: '#3498db',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: true
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time Period',
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                color: '#2c3e50'
+                            },
+                            grid: {
+                                display: true,
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                maxTicksLimit: 15,
+                                color: '#7f8c8d'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Number of Denunciations',
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                color: '#2c3e50'
+                            },
+                            grid: {
+                                display: true,
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                color: '#7f8c8d'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Police Operations & Shootouts',
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                color: '#2c3e50'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            ticks: {
+                                color: '#7f8c8d'
+                            }
+                        }
+                    },
+                    ...options
+                }
+            });
+        }
+
+        function showAllData() {
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const chartData = {
+                labels: data.dates,
+                datasets: [
+                    {
+                        label: 'Denunciations',
+                        type: 'line',
+                        data: data.denunciations,
+                        borderColor: '#2c3e50',
+                        backgroundColor: 'rgba(44, 62, 80, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Police Operations',
+                        type: 'bar',
+                        data: data.policeOps,
+                        backgroundColor: 'rgba(52, 73, 94, 0.7)',
+                        borderColor: '#34495e',
+                        borderWidth: 1,
+                        yAxisID: 'y1'
+                    },
+                    {
+                        label: 'Shootouts',
+                        type: 'bar',
+                        data: data.shootouts,
+                        backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                        borderColor: '#e74c3c',
+                        borderWidth: 1,
+                        yAxisID: 'y1'
+                    }
+                ]
+            };
+
+            createChart(chartData);
+        }
+
+        function showSmoothed() {
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Apply moving average smoothing
+            function movingAverage(arr, windowSize = 6) {
+                return arr.map((_, index) => {
+                    const start = Math.max(0, index - Math.floor(windowSize / 2));
+                    const end = Math.min(arr.length, index + Math.ceil(windowSize / 2));
+                    const slice = arr.slice(start, end);
+                    return slice.reduce((sum, val) => sum + val, 0) / slice.length;
+                });
+            }
+
+            const chartData = {
+                labels: data.dates,
+                datasets: [
+                    {
+                        label: 'Denunciations (Smoothed)',
+                        type: 'line',
+                        data: movingAverage(data.denunciations),
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Police Operations (Smoothed)',
+                        type: 'line',
+                        data: movingAverage(data.policeOps),
+                        borderColor: '#34495e',
+                        backgroundColor: 'rgba(52, 73, 94, 0.2)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }
+                ]
+            };
+
+            createChart(chartData);
+        }
+
+        function showYearly() {
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Aggregate data by year
+            const yearlyData = {};
+            data.dates.forEach((date, index) => {
+                const year = date.split('-')[0];
+                if (!yearlyData[year]) {
+                    yearlyData[year] = {
+                        denunciations: 0,
+                        policeOps: 0,
+                        shootouts: 0,
+                        count: 0
+                    };
+                }
+                yearlyData[year].denunciations += data.denunciations[index];
+                yearlyData[year].policeOps += data.policeOps[index];
+                yearlyData[year].shootouts += data.shootouts[index];
+                yearlyData[year].count++;
+            });
+
+            const years = Object.keys(yearlyData).sort();
+            const yearlyDenunciations = years.map(year => yearlyData[year].denunciations);
+            const yearlyPoliceOps = years.map(year => yearlyData[year].policeOps);
+            const yearlyShootouts = years.map(year => yearlyData[year].shootouts);
+
+            const chartData = {
+                labels: years,
+                datasets: [
+                    {
+                        label: 'Annual Denunciations',
+                        type: 'bar',
+                        data: yearlyDenunciations,
+                        backgroundColor: 'rgba(52, 152, 219, 0.8)',
+                        borderColor: '#3498db',
+                        borderWidth: 2,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Annual Police Operations',
+                        type: 'bar',
+                        data: yearlyPoliceOps,
+                        backgroundColor: 'rgba(52, 73, 94, 0.8)',
+                        borderColor: '#34495e',
+                        borderWidth: 2,
+                        yAxisID: 'y1'
+                    },
+                    {
+                        label: 'Annual Shootouts',
+                        type: 'bar',
+                        data: yearlyShootouts,
+                        backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                        borderColor: '#e74c3c',
+                        borderWidth: 2,
+                        yAxisID: 'y1'
+                    }
+                ]
+            };
+
+            createChart(chartData);
+        }
+
+        // Initialize with all data view
+        window.onload = function() {
+            showAllData();
+        };
+    </script>
+</body>
+</html>
