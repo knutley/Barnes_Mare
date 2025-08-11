@@ -128,6 +128,9 @@ unique(df_labeled$crime_type) # These columns collapsed the right way here;
 crime_table <- table(df_labeled$crime_type)
 print(crime_table)
 
+# 5. Save Data 
+write.csv(df_labeled, "data_with_labels.csv", row.names = FALSE)
+
 
 
 
