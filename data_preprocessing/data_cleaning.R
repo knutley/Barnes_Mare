@@ -1,4 +1,4 @@
-# Title: Data Processing - Resident Denunciation Project
+# Title: Data Preprocessing - Resident Denunciation Project
 # Author: Katelyn Nutley
 # Date: 18-07-2025
 
