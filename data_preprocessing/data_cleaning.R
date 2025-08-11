@@ -85,3 +85,6 @@ cat("Original Manguinhos dataset rows:", nrow(df2), "\n")
 cat("Merged dataset rows:", nrow(df_merged), "\n")
 cat("Cleaned dataset rows (after deduplication):", nrow(df_cleaned), "\n")
 cat("Duplicates removed:", nrow(df_merged) - nrow(df_cleaned), "\n")
+
+# 8. Save Dataset
+write.csv(df_cleaned, "df_cleaned.csv", row.names = FALSE)
