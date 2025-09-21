@@ -14,19 +14,19 @@ This project represents a collaborative effort with distinct contributions:
 
 **Katelyn Nutley:**
 
-- Complete data cleaning and preprocessing pipeline development
-- Statistical analysis framework design and implementation
-- All visualisation scripts and functions
-- Methodological design and analytical approach
-- Interactive dashboard development and maintenance
-- Repository maintenance and documentation
+* Complete data cleaning and preprocessing pipeline development
+* Statistical analysis framework design and implementation
+* All visualisation scripts and functions
+* Methodological design and analytical approach
+* Interactive dashboard development and maintenance
+* Repository maintenance and documentation
 
 **Dr. Nicholas Barnes:**
 
-- Project conception and supervision
-- Research design oversight
-- Institutional support and data access facilitation
-- Manuscript preparation and findings interpretation
+* Project conception and supervision
+* Research design oversight
+* Institutional support and data access facilitation
+* Manuscript preparation and findings interpretation
 
 ## Data ## 
 The data analyzed in this project is sourced from a crime watch hotline located in Maré, a neighbourhood and favela in the North Zone of Rio de Janeiro, Brazil (22.8518° S, 43.2431° W).
@@ -57,5 +57,5 @@ Katelyn Nutley: kn32@st-andrews.ac.uk
 **Technical and methodological questions:**
 Katelyn Nutley: kn32@st-andrews.ac.uk
 
-**License**
+## License ##
 Repository developed and maintained by Katelyn Nutley
