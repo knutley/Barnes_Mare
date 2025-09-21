@@ -6,9 +6,9 @@ This repository contains the codebook, code, and statistical analysis for the Re
 
 ## Research Team ##
 
-**Principal Investigator:** Dr. Nicholas Barnes
-**Lead Developer and Analyst:** Katelyn Nutley
-**Development Period:** September 2024 - September 2025
+* **Principal Investigator:** Dr. Nicholas Barnes
+* **Lead Developer and Analyst:** Katelyn Nutley
+* **Development Period:** September 2024 - September 2025
 
 ## Contribution Taxonomy ## 
 
