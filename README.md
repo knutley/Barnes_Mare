@@ -1,11 +1,13 @@
 ## Resident Denunciation Project ##
 
 ## Overview ## 
+
 This repository contains the codebook, code, and statistical analysis for the Resident Denunciation Project, a collaborative research study examining crime reporting patterns in urban communities.
 
 ## Research Team ##
+
 **Principal Investigator:** Dr. Nicholas Barnes
-**Co-Investigator & Lead Developer:** Katelyn Nutley
+**Lead Developer and Analyst:** Katelyn Nutley
 **Development Period:** September 2024 - September 2025
 
 ## Contribution Taxonomy ## 
