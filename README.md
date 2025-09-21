@@ -38,11 +38,11 @@ The data analyzed in this project is sourced from a crime watch hotline located 
 ## Repository Contents ##
 
 This repository includes:
-**Code book:** Clarifying what variables referenced mean
-**Data preprocessing:** Cleaning and partitioning the crime hotline data
-**Statistical analysis:** Performing structural break tests to measure data stability over time
-**Visualisation:** Creating charts and graphs to explore reporting patterns
-**Interactive dashboard:** A web-based interface displaying key statistics and trends
+* **Code book:** Clarifying what variables referenced mean
+* **Data preprocessing:** Cleaning and partitioning the crime hotline data
+* **Statistical analysis:** Performing structural break tests to measure data stability over time
+* **Visualisation:** Creating charts and graphs to explore reporting patterns
+* **Interactive dashboard:** A web-based interface displaying key statistics and trends
 
 **Live Dashboard: View the interactive dashboard here**
 
