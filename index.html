@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crime Events Over Time - Improved</title>
+    <title>Crime Events Over Time - Live Data</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -42,7 +43,6 @@
             height: 600px;
             margin-bottom: 30px;
         }
-
         .controls {
             display: flex;
             justify-content: center;
@@ -68,71 +68,153 @@
         .control-btn.active {
             background: #e74c3c;
         }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #7f8c8d;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="chart-header">
             <h1 class="chart-title">Crime Events Analysis Dashboard</h1>
-            <p class="chart-subtitle">Comprehensive view of denunciations, police operations, and shootouts over time</p>
+            <p class="chart-subtitle">Comprehensive view of denunciations and operations over time</p>
         </div>
 
-        <div class="controls">
+        <div id="loading" class="loading">Loading data...</div>
+        
+        <div id="stats" class="stats" style="display: none;"></div>
+
+        <div class="controls" style="display: none;" id="controls">
             <button class="control-btn active" onclick="showAllData()">All Data</button>
             <button class="control-btn" onclick="showSmoothed()">Smoothed Trend</button>
             <button class="control-btn" onclick="showYearly()">Yearly View</button>
+            <button class="control-btn" onclick="showByTerritory()">By Territory</button>
+            <button class="control-btn" onclick="showByCrimeType()">By Crime Type</button>
         </div>
 
         <div class="chart-container">
             <canvas id="crimeChart"></canvas>
         </div>
-
-
     </div>
 
     <script>
-        // Generate sample data based on the original chart patterns
-        function generateSampleData() {
-            const dates = [];
-            const denunciations = [];
-            const policeOps = [];
-            const shootouts = [];
+        // Google Sheets CSV URL
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSOJAMw024OWRdnyE-y4MA4YFJS7mLbyhwIpzR8USCVq_2Nq6mcm_An1Xzt1kAgYhrU9zjks4ea0tbA/pub?output=csv';
+        
+        let chart;
+        let rawData = [];
+        let processedData = {};
 
-            // Create monthly data from 2003 to 2014
-            for (let year = 2003; year <= 2014; year++) {
-                for (let month = 0; month < 12; month++) {
-                    const date = new Date(year, month, 1);
-                    dates.push(date.toISOString().slice(0, 7));
-                    
-                    // Generate realistic patterns based on the original chart
-                    let baseDenunciations = 120 + Math.sin((year - 2003) * 0.5) * 30;
-                    let volatility = 50 + Math.random() * 100;
-                    
-                    // Add some major spikes at specific periods
-                    if ((year === 2004 && month < 6) || 
-                        (year === 2009 && month > 6) || 
-                        (year === 2012 && month < 8) ||
-                        (year === 2014 && month > 8)) {
-                        volatility += Math.random() * 200;
+        // Load and process data
+        async function loadData() {
+            try {
+                Papa.parse(SHEET_URL, {
+                    download: true,
+                    header: true,
+                    complete: function(results) {
+                        rawData = results.data.filter(row => row.date && row.date !== 'NA');
+                        processData();
+                        showStats();
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('controls').style.display = 'flex';
+                        document.getElementById('stats').style.display = 'grid';
+                        showAllData();
+                    },
+                    error: function(error) {
+                        document.getElementById('loading').innerHTML = 'Error loading data: ' + error.message;
                     }
-                    
-                    denunciations.push(Math.max(20, baseDenunciations + volatility));
-                    
-                    // Police operations typically scale with denunciations but with delay
-                    const opsBase = Math.min(50, Math.max(1, denunciations[denunciations.length - 1] * 0.08 + Math.random() * 10));
-                    policeOps.push(opsBase);
-                    
-                    // Shootouts are rarer events
-                    const shootoutProb = Math.random();
-                    shootouts.push(shootoutProb > 0.7 ? Math.random() * 15 + 2 : Math.random() * 3);
-                }
+                });
+            } catch (error) {
+                document.getElementById('loading').innerHTML = 'Error: ' + error.message;
             }
-
-            return { dates, denunciations, policeOps, shootouts };
         }
 
-        const data = generateSampleData();
-        let chart;
+        function processData() {
+            // Group by month
+            const monthlyData = {};
+            
+            rawData.forEach(row => {
+                const date = row.date;
+                if (!date || date === 'NA') return;
+                
+                if (!monthlyData[date]) {
+                    monthlyData[date] = {
+                        denunciations: 0,
+                        operations: 0,
+                        milicia: 0,
+                        tcp: 0,
+                        crimes: {}
+                    };
+                }
+                
+                monthlyData[date].denunciations++;
+                
+                if (row.den_operação === '1') {
+                    monthlyData[date].operations++;
+                }
+                
+                // Territory type
+                const territory = row.territory_type || 'other';
+                if (territory.includes('milicia')) monthlyData[date].milicia++;
+                if (territory.includes('TCP')) monthlyData[date].tcp++;
+                
+                // Crime types
+                const crimeType = row.crime_type || 'OTHER';
+                monthlyData[date].crimes[crimeType] = (monthlyData[date].crimes[crimeType] || 0) + 1;
+            });
+            
+            processedData = monthlyData;
+        }
+
+        function showStats() {
+            const totalDenunciations = rawData.length;
+            const totalOperations = rawData.filter(r => r.den_operação === '1').length;
+            const dateRange = rawData.map(r => r.date).filter(d => d && d !== 'NA').sort();
+            const firstDate = dateRange[0];
+            const lastDate = dateRange[dateRange.length - 1];
+            
+            const statsHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${totalDenunciations.toLocaleString()}</div>
+                    <div class="stat-label">Total Denunciations</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="stat-value">${totalOperations.toLocaleString()}</div>
+                    <div class="stat-label">Police Operations</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="stat-value">${firstDate} - ${lastDate}</div>
+                    <div class="stat-label">Date Range</div>
+                </div>
+            `;
+            
+            document.getElementById('stats').innerHTML = statsHTML;
+        }
 
         function createChart(chartData, options = {}) {
             const ctx = document.getElementById('crimeChart').getContext('2d');
@@ -148,9 +230,6 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        title: {
-                            display: false
-                        },
                         legend: {
                             position: 'top',
                             labels: {
@@ -166,12 +245,9 @@
                             mode: 'index',
                             intersect: false,
                             backgroundColor: 'rgba(0,0,0,0.8)',
-                            titleColor: 'white',
-                            bodyColor: 'white',
                             borderColor: '#3498db',
                             borderWidth: 1,
-                            cornerRadius: 8,
-                            displayColors: true
+                            cornerRadius: 8
                         }
                     },
                     interaction: {
@@ -187,16 +263,10 @@
                                 font: {
                                     size: 14,
                                     weight: '600'
-                                },
-                                color: '#2c3e50'
-                            },
-                            grid: {
-                                display: true,
-                                color: 'rgba(0,0,0,0.1)'
+                                }
                             },
                             ticks: {
-                                maxTicksLimit: 15,
-                                color: '#7f8c8d'
+                                maxTicksLimit: 20
                             }
                         },
                         y: {
@@ -205,39 +275,11 @@
                             position: 'left',
                             title: {
                                 display: true,
-                                text: 'Number of Denunciations',
+                                text: 'Count',
                                 font: {
                                     size: 14,
                                     weight: '600'
-                                },
-                                color: '#2c3e50'
-                            },
-                            grid: {
-                                display: true,
-                                color: 'rgba(0,0,0,0.1)'
-                            },
-                            ticks: {
-                                color: '#7f8c8d'
-                            }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: {
-                                display: true,
-                                text: 'Police Operations & Shootouts',
-                                font: {
-                                    size: 14,
-                                    weight: '600'
-                                },
-                                color: '#2c3e50'
-                            },
-                            grid: {
-                                drawOnChartArea: false,
-                            },
-                            ticks: {
-                                color: '#7f8c8d'
+                                }
                             }
                         }
                     },
@@ -250,37 +292,30 @@
             document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
+            const dates = Object.keys(processedData).sort();
+            const denunciations = dates.map(d => processedData[d].denunciations);
+            const operations = dates.map(d => processedData[d].operations);
+
             const chartData = {
-                labels: data.dates,
+                labels: dates,
                 datasets: [
                     {
                         label: 'Denunciations',
                         type: 'line',
-                        data: data.denunciations,
+                        data: denunciations,
                         borderColor: '#2c3e50',
                         backgroundColor: 'rgba(44, 62, 80, 0.1)',
                         borderWidth: 2,
                         fill: true,
-                        tension: 0.1,
-                        yAxisID: 'y'
+                        tension: 0.1
                     },
                     {
-                        label: 'Police Operations',
+                        label: 'Operations',
                         type: 'bar',
-                        data: data.policeOps,
-                        backgroundColor: 'rgba(52, 73, 94, 0.7)',
-                        borderColor: '#34495e',
-                        borderWidth: 1,
-                        yAxisID: 'y1'
-                    },
-                    {
-                        label: 'Shootouts',
-                        type: 'bar',
-                        data: data.shootouts,
+                        data: operations,
                         backgroundColor: 'rgba(231, 76, 60, 0.7)',
                         borderColor: '#e74c3c',
-                        borderWidth: 1,
-                        yAxisID: 'y1'
+                        borderWidth: 1
                     }
                 ]
             };
@@ -292,7 +327,6 @@
             document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
-            // Apply moving average smoothing
             function movingAverage(arr, windowSize = 6) {
                 return arr.map((_, index) => {
                     const start = Math.max(0, index - Math.floor(windowSize / 2));
@@ -302,30 +336,32 @@
                 });
             }
 
+            const dates = Object.keys(processedData).sort();
+            const denunciations = dates.map(d => processedData[d].denunciations);
+            const operations = dates.map(d => processedData[d].operations);
+
             const chartData = {
-                labels: data.dates,
+                labels: dates,
                 datasets: [
                     {
                         label: 'Denunciations (Smoothed)',
                         type: 'line',
-                        data: movingAverage(data.denunciations),
+                        data: movingAverage(denunciations),
                         borderColor: '#3498db',
                         backgroundColor: 'rgba(52, 152, 219, 0.2)',
                         borderWidth: 3,
                         fill: true,
-                        tension: 0.4,
-                        yAxisID: 'y'
+                        tension: 0.4
                     },
                     {
-                        label: 'Police Operations (Smoothed)',
+                        label: 'Operations (Smoothed)',
                         type: 'line',
-                        data: movingAverage(data.policeOps),
-                        borderColor: '#34495e',
-                        backgroundColor: 'rgba(52, 73, 94, 0.2)',
+                        data: movingAverage(operations),
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.2)',
                         borderWidth: 2,
                         fill: false,
-                        tension: 0.4,
-                        yAxisID: 'y1'
+                        tension: 0.4
                     }
                 ]
             };
@@ -337,28 +373,19 @@
             document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
-            // Aggregate data by year
             const yearlyData = {};
-            data.dates.forEach((date, index) => {
+            Object.keys(processedData).forEach(date => {
                 const year = date.split('-')[0];
                 if (!yearlyData[year]) {
-                    yearlyData[year] = {
-                        denunciations: 0,
-                        policeOps: 0,
-                        shootouts: 0,
-                        count: 0
-                    };
+                    yearlyData[year] = { denunciations: 0, operations: 0 };
                 }
-                yearlyData[year].denunciations += data.denunciations[index];
-                yearlyData[year].policeOps += data.policeOps[index];
-                yearlyData[year].shootouts += data.shootouts[index];
-                yearlyData[year].count++;
+                yearlyData[year].denunciations += processedData[date].denunciations;
+                yearlyData[year].operations += processedData[date].operations;
             });
 
             const years = Object.keys(yearlyData).sort();
-            const yearlyDenunciations = years.map(year => yearlyData[year].denunciations);
-            const yearlyPoliceOps = years.map(year => yearlyData[year].policeOps);
-            const yearlyShootouts = years.map(year => yearlyData[year].shootouts);
+            const denunciations = years.map(y => yearlyData[y].denunciations);
+            const operations = years.map(y => yearlyData[y].operations);
 
             const chartData = {
                 labels: years,
@@ -366,29 +393,18 @@
                     {
                         label: 'Annual Denunciations',
                         type: 'bar',
-                        data: yearlyDenunciations,
+                        data: denunciations,
                         backgroundColor: 'rgba(52, 152, 219, 0.8)',
                         borderColor: '#3498db',
-                        borderWidth: 2,
-                        yAxisID: 'y'
+                        borderWidth: 2
                     },
                     {
-                        label: 'Annual Police Operations',
+                        label: 'Annual Operations',
                         type: 'bar',
-                        data: yearlyPoliceOps,
-                        backgroundColor: 'rgba(52, 73, 94, 0.8)',
-                        borderColor: '#34495e',
-                        borderWidth: 2,
-                        yAxisID: 'y1'
-                    },
-                    {
-                        label: 'Annual Shootouts',
-                        type: 'bar',
-                        data: yearlyShootouts,
+                        data: operations,
                         backgroundColor: 'rgba(231, 76, 60, 0.8)',
                         borderColor: '#e74c3c',
-                        borderWidth: 2,
-                        yAxisID: 'y1'
+                        borderWidth: 2
                     }
                 ]
             };
@@ -396,9 +412,101 @@
             createChart(chartData);
         }
 
-        // Initialize with all data view
+        function showByTerritory() {
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const dates = Object.keys(processedData).sort();
+            const milicia = dates.map(d => processedData[d].milicia);
+            const tcp = dates.map(d => processedData[d].tcp);
+
+            const chartData = {
+                labels: dates,
+                datasets: [
+                    {
+                        label: 'Milicia',
+                        type: 'line',
+                        data: milicia,
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'TCP',
+                        type: 'line',
+                        data: tcp,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            };
+
+            createChart(chartData);
+        }
+
+        function showByCrimeType() {
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Aggregate crime types across all months
+            const crimeTypeTotals = {};
+            Object.values(processedData).forEach(monthData => {
+                Object.entries(monthData.crimes).forEach(([type, count]) => {
+                    crimeTypeTotals[type] = (crimeTypeTotals[type] || 0) + count;
+                });
+            });
+
+            const sortedCrimes = Object.entries(crimeTypeTotals)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            const chartData = {
+                labels: sortedCrimes.map(c => c[0]),
+                datasets: [{
+                    label: 'Total Denunciations',
+                    data: sortedCrimes.map(c => c[1]),
+                    backgroundColor: [
+                        'rgba(231, 76, 60, 0.8)',
+                        'rgba(52, 152, 219, 0.8)',
+                        'rgba(46, 204, 113, 0.8)',
+                        'rgba(155, 89, 182, 0.8)',
+                        'rgba(241, 196, 15, 0.8)',
+                        'rgba(230, 126, 34, 0.8)',
+                        'rgba(52, 73, 94, 0.8)',
+                        'rgba(26, 188, 156, 0.8)',
+                        'rgba(243, 156, 18, 0.8)',
+                        'rgba(149, 165, 166, 0.8)'
+                    ]
+                }]
+            };
+
+            createChart(chartData, {
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Number of Denunciations'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Crime Type'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize
         window.onload = function() {
-            showAllData();
+            loadData();
         };
     </script>
 </body>
