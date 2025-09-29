@@ -81,7 +81,7 @@
             margin-bottom: 30px;
         }
         .stat-card {
-            background: #c43002;
+            background: #a0522d;
             color: white;
             padding: 20px;
             border-radius: 10px;
@@ -121,7 +121,7 @@
         </div>
 
         <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; color: #7f8c8d; font-size: 14px;">
-            All Data Visualisation and Statistical Analysis Code by Katelyn Nutley
+            Data Visualisation and Statistical Analysis by Katelyn Nutley
         </div>
     </div>
 
@@ -169,22 +169,20 @@
                     monthlyData[date] = {
                         denunciations: 0,
                         operations: 0,
-                        milicia: 0,
-                        tcp: 0,
+                        territories: {},
                         crimes: {}
                     };
                 }
                 
                 monthlyData[date].denunciations++;
                 
-                if (row.operations === '1') {
+                if (row.den_operação === '1') {
                     monthlyData[date].operations++;
                 }
                 
-                // Territory type
-                const territory = row.territory_type || 'other';
-                if (territory.includes('milicia')) monthlyData[date].milicia++;
-                if (territory.includes('TCP')) monthlyData[date].tcp++;
+                // Territory type - track all types
+                const territory = row.territory_type || 'unassigned';
+                monthlyData[date].territories[territory] = (monthlyData[date].territories[territory] || 0) + 1;
                 
                 // Crime types
                 const crimeType = row.crime_type || 'OTHER';
@@ -196,7 +194,7 @@
 
         function showStats() {
             const totalDenunciations = rawData.length;
-            const totalOperations = rawData.filter(r => r.operations === '1').length;
+            const totalOperations = rawData.filter(r => r.den_operação === '1').length;
             const dateRange = rawData.map(r => r.date).filter(d => d && d !== 'NA').sort();
             const firstDate = dateRange[0];
             const lastDate = dateRange[dateRange.length - 1];
@@ -206,11 +204,11 @@
                     <div class="stat-value">${totalDenunciations.toLocaleString()}</div>
                     <div class="stat-label">Total Denunciations</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);">
                     <div class="stat-value">${totalOperations.toLocaleString()}</div>
                     <div class="stat-label">Police Operations</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" style="background: linear-gradient(135deg, #c0392b 0%, #922b21 100%);">
                     <div class="stat-value">${firstDate} - ${lastDate}</div>
                     <div class="stat-label">Date Range</div>
                 </div>
@@ -420,33 +418,32 @@
             event.target.classList.add('active');
 
             const dates = Object.keys(processedData).sort();
-            const milicia = dates.map(d => processedData[d].milicia);
-            const tcp = dates.map(d => processedData[d].tcp);
+            
+            // Get all unique territory types and aggregate data
+            const territoryTypes = ['ADA-TCP', 'CVNH', 'CVPU', 'TCP', 'TCP-milicia', 'unassigned'];
+            const colors = [
+                '#e74c3c',  // Red
+                '#3498db',  // Blue
+                '#2ecc71',  // Green
+                '#9b59b6',  // Purple
+                '#f39c12',  // Orange
+                '#95a5a6'   // Gray
+            ];
+            
+            const datasets = territoryTypes.map((territory, index) => ({
+                label: territory,
+                type: 'line',
+                data: dates.map(d => processedData[d].territories[territory] || 0),
+                borderColor: colors[index],
+                backgroundColor: colors[index].replace(')', ', 0.2)').replace('rgb', 'rgba'),
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            }));
 
             const chartData = {
                 labels: dates,
-                datasets: [
-                    {
-                        label: 'Milicia',
-                        type: 'line',
-                        data: milicia,
-                        borderColor: '#e74c3c',
-                        backgroundColor: 'rgba(231, 76, 60, 0.2)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.3
-                    },
-                    {
-                        label: 'TCP',
-                        type: 'line',
-                        data: tcp,
-                        borderColor: '#3498db',
-                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.3
-                    }
-                ]
+                datasets: datasets
             };
 
             createChart(chartData);
