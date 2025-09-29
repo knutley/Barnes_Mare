@@ -196,7 +196,7 @@
 
         function showStats() {
             const totalDenunciations = rawData.length;
-            const totalOperations = rawData.filter(r => r.operationsação === '1').length;
+            const totalOperations = rawData.filter(r => r.operations === '1').length;
             const dateRange = rawData.map(r => r.date).filter(d => d && d !== 'NA').sort();
             const firstDate = dateRange[0];
             const lastDate = dateRange[dateRange.length - 1];
