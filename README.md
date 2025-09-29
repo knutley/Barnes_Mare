@@ -62,5 +62,12 @@ Katelyn Nutley: kn32@st-andrews.ac.uk
 **Technical and methodological questions:**
 Katelyn Nutley: kn32@st-andrews.ac.uk
 
+## Citation
+
+If you use this analysis framework or methodology in academic work, please cite:
+
+Nutley, K. (2025). Resident Denunciation Project - Statistical Analysis Framework. 
+GitHub repository: https://github.com/knutley/Barnes_Mare
+
 ## License ##
 Repository developed and maintained by Katelyn Nutley
