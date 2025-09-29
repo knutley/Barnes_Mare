@@ -47,6 +47,8 @@ This repository includes:
 
 **Live Dashboard: View the interactive dashboard here**
 
+https://knutley.github.io/Barnes_Mare/
+
 ## Ethical Considerations ##
 
 This research handles sensitive crime reporting data with careful attention to privacy and anonymisation standards. All data processing follows institutional ethical guidelines for research involving community safety information.
