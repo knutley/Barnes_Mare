@@ -322,6 +322,52 @@
             createChart(chartData);
         }
 
+        function showSmoothed() {
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            function movingAverage(arr, windowSize = 6) {
+                return arr.map((_, index) => {
+                    const start = Math.max(0, index - Math.floor(windowSize / 2));
+                    const end = Math.min(arr.length, index + Math.ceil(windowSize / 2));
+                    const slice = arr.slice(start, end);
+                    return slice.reduce((sum, val) => sum + val, 0) / slice.length;
+                });
+            }
+
+            const dates = Object.keys(processedData).sort();
+            const denunciations = dates.map(d => processedData[d].denunciations);
+            const operations = dates.map(d => processedData[d].operations);
+
+            const chartData = {
+                labels: dates,
+                datasets: [
+                    {
+                        label: 'Denunciations (Smoothed)',
+                        type: 'line',
+                        data: movingAverage(denunciations),
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Operations (Smoothed)',
+                        type: 'line',
+                        data: movingAverage(operations),
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.4
+                    }
+                ]
+            };
+
+            createChart(chartData);
+        }
+
         function showYearly() {
             document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
