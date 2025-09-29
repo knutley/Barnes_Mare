@@ -245,7 +245,7 @@
             <button class="control-btn" onclick="showYearly()">Yearly View</button>
             <button class="control-btn" onclick="showByTerritory()">By Territory</button>
             <button class="control-btn" onclick="showByCrimeType()">By Crime Type</button>
-            <button class="control-btn" onclick="showCommunityMap()">Community Map</button>
+            <button class="control-btn" onclick="showCommunityStats()">Community Stats</button>
             <button class="control-btn" onclick="showGeographicMap()">Geographic Map</button>
         </div>
 
@@ -534,11 +534,12 @@
         }
 
         function showByTerritory() {
-            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            document.querySelector('.chart-container').style.display = 'block';
-            document.getElementById('mapContainer').style.display = 'none';
+    document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    document.querySelector('.chart-container').style.display = 'block';
+    document.getElementById('mapContainer').style.display = 'none';
+    document.getElementById('geoMap').style.display = 'none';
 
             const dates = Object.keys(processedData).sort();
             
@@ -630,7 +631,7 @@
             });
         }
 
-        function showCommunityMap() {
+        function showCommunityStats() {
             document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             
