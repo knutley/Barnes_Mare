@@ -29,7 +29,7 @@ This project represents a collaborative effort with distinct contributions:
 * Research design oversight
 * Institutional support and data access facilitation
 * Manuscript preparation and findings interpretation
-* Some manual data adjustments post processing
+* Manual data adjustments post-processing
 
 ## Data ## 
 The data analyzed in this project is sourced from a crime watch hotline located in Maré, a neighbourhood and favela in the North Zone of Rio de Janeiro, Brazil (22.8518° S, 43.2431° W).
