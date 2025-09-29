@@ -426,7 +426,7 @@
                 '#3498db',  // Blue
                 '#2ecc71',  // Green
                 '#9b59b6',  // Purple
-                '#f39c12',  // Yellow
+                '#f3cd12',  // Yellow
                 '#95a5a6'   // Gray
             ];
             
@@ -435,9 +435,9 @@
                 type: 'line',
                 data: dates.map(d => processedData[d].territories[territory] || 0),
                 borderColor: colors[index],
-                backgroundColor: colors[index].replace(')', ', 0.2)').replace('rgb', 'rgba'),
+                backgroundColor: 'transparent',
                 borderWidth: 2,
-                fill: true,
+                fill: false,
                 tension: 0.3
             }));
 
