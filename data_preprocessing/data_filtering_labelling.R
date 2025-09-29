@@ -131,6 +131,8 @@ print(crime_table)
 # 5. Save Data 
 write.csv(df_labeled, "data_with_labels.csv", row.names = FALSE)
 
+** PI applied manual data adjustments post-processing. 
+
 
 
 
